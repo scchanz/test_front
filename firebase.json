@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"backend-klinik","appId":"1:38802259546:android:8d4410c3d9fa47da5e6263","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"backend-klinik","configurations":{"android":"1:38802259546:android:8d4410c3d9fa47da5e6263","ios":"1:38802259546:ios:580ec4c0bc003c005e6263"}}}}}}

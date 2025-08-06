@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "38802259546",
+    "project_id": "backend-klinik",
+    "storage_bucket": "backend-klinik.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38802259546:android:8d4410c3d9fa47da5e6263",
+        "android_client_info": {
+          "package_name": "com.example.test_front"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "38802259546-grl6810cmeb0a3s4cjquqgnc7sdri127.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.test_front",
+            "certificate_hash": "ca8aa1be69220cf23d722fc92c83707da0d7d913"
+          }
+        },
+        {
+          "client_id": "38802259546-7t8caf9ttijt3hauavldcnovidi40f14.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLuCXRp107z4j5IrMPpJvp5Zb5xIgd6og"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "38802259546-7t8caf9ttijt3hauavldcnovidi40f14.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "38802259546-3t98ruhro44bk7h4qu9n38ggufk5d12l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.testFront"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
