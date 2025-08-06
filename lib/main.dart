@@ -15,11 +15,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Form Firebase App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginPage(),
+      home:  LoginPage(),
       debugShowCheckedModeBanner: false,
-      routes: {
-        '/login' : (context) => const LoginPage(),
-      },
     );
   }
 }
