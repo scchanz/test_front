@@ -7,6 +7,7 @@ import 'package:test_front/components/customdrawer.dart';
 import 'package:test_front/pages/rekammedis/input_rm.dart';
 import 'package:test_front/pages/rekammedis/lihat_rm.dart';
 import 'package:test_front/components/customnotification.dart';
+import 'package:test_front/pages/login/login_page.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -77,6 +78,10 @@ class _HomePageState extends State<HomePage>
   }
 
   String _getUsername() {
+    // Prioritas: displayName > email username > 'Tamu'
+    if (widget.user.displayName != null && widget.user.displayName!.isNotEmpty) {
+      return widget.user.displayName!;
+    }
     if (widget.user.email != null) {
       return widget.user.email!.split('@')[0];
     }
@@ -94,6 +99,114 @@ class _HomePageState extends State<HomePage>
     } else {
       return 'Selamat Malam';
     }
+  }
+
+  // Widget untuk menampilkan foto profil
+  Widget _buildProfileImage({required double size, double borderWidth = 3}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white,
+          width: borderWidth,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: _buildProfileImageContent(size),
+      ),
+    );
+  }
+
+  Widget _buildProfileImageContent(double size) {
+    // Jika user memiliki foto profil (biasanya dari Google)
+    if (widget.user.photoURL != null && widget.user.photoURL!.isNotEmpty) {
+      return Image.network(
+        widget.user.photoURL!,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: size,
+            height: size,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              ),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          // Jika gagal load gambar, tampilkan avatar default
+          return _buildDefaultAvatar(size);
+        },
+      );
+    } else {
+      // Jika tidak ada foto profil, tampilkan avatar default
+      return _buildDefaultAvatar(size);
+    }
+  }
+
+  Widget _buildDefaultAvatar(double size) {
+    final username = _getUsername();
+    final initials = username.isNotEmpty 
+        ? username.split(' ')
+            .take(2)
+            .map((name) => name.isNotEmpty ? name[0].toUpperCase() : '')
+            .join()
+        : 'T';
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF667eea),
+            Color(0xFF764ba2),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: size * 0.35,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => LoginPage()),
+    );
   }
 
   @override
@@ -134,12 +247,8 @@ class _HomePageState extends State<HomePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Welcome Section
-                        WelcomeCard(
-                          greeting: greeting,
-                          username: username,
-                          email: widget.user.email ?? 'guest@local.app',
-                        ),
+                        // Enhanced Welcome Section with Profile Photo
+                        _buildEnhancedWelcomeCard(greeting, username),
                         
                         const SizedBox(height: 32),
                         
@@ -181,6 +290,173 @@ class _HomePageState extends State<HomePage>
           ),
         ),
       ),      
+    );
+  }
+
+  Widget _buildEnhancedWelcomeCard(String greeting, String username) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF667eea),
+            Color(0xFF764ba2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667eea).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Profile Photo
+          _buildProfileImage(size: 70),
+          
+          const SizedBox(width: 16),
+          
+          // User Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  username,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (widget.user.email != null)
+                  Text(
+                    widget.user.email!,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          // Login Provider Indicator
+          _buildLoginProviderIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginProviderIndicator() {
+    // Deteksi provider login
+    bool isGoogleLogin = false;
+    
+    // Cek apakah user login dengan Google
+    for (final providerData in widget.user.providerData) {
+      if (providerData.providerId == 'google.com') {
+        isGoogleLogin = true;
+        break;
+      }
+    }
+
+    if (isGoogleLogin) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: Image.network(
+                  'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
+                  width: 16,
+                  height: 16,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.g_mobiledata,
+                    size: 14,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              'Google',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.email,
+            size: 12,
+            color: Colors.white,
+          ),
+          SizedBox(width: 4),
+          Text(
+            'Email',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -285,7 +561,104 @@ class _HomePageState extends State<HomePage>
             ),
           ),
         ),
+        // Profile Photo in AppBar
+        Container(
+          margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+          child: GestureDetector(
+            onTap: () {
+              // TODO: Show profile menu or navigate to profile
+              _showProfileMenu();
+            },
+            child: _buildProfileImage(size: 32, borderWidth: 2),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Profile info
+            Row(
+              children: [
+                _buildProfileImage(size: 60),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getUsername(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (widget.user.email != null)
+                        Text(
+                          widget.user.email!,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
+            const Divider(),
+            
+            // Menu items
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('Edit Profil'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to edit profile
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('Pengaturan'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to settings
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Keluar', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _logout();
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
