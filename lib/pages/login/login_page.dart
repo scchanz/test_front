@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:test_front/pages/home/home_page.dart';
+import 'package:test_front/pages/register/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -458,7 +459,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               ),
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => RegisterPage(),
+                                  ),
+                                );
+                              },
                               child: Text(
                                 'Daftar Sekarang',
                                 style: TextStyle(
