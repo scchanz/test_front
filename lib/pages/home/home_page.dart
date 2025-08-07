@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/pages/home/widgets/stats_card.dart';
-import 'package:test_front/pages/home/widgets/welcome_card.dart';
 import 'package:test_front/pages/pasien/register_patient.dart';
 import 'package:test_front/components/customdrawer.dart';
 import 'package:test_front/pages/rekammedis/input_rm.dart';
