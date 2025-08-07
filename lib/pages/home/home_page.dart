@@ -5,7 +5,7 @@ import 'package:test_front/pages/home/widgets/welcome_card.dart';
 import 'package:test_front/pages/pasien/register_patient.dart';
 import 'package:test_front/components/customdrawer.dart';
 import 'package:test_front/pages/rekammedis/input_rm.dart';
-import 'package:test_front/pages/rekammedis/lihat_rm.dart';
+import 'package:test_front/pages/rekammedis/list_rm.dart';
 import 'package:test_front/components/customnotification.dart';
 import 'package:test_front/pages/login/login_page.dart';
 
