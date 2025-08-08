@@ -9,7 +9,21 @@ class DetailRekamMedisPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = document.data() as Map<String, dynamic>;
+    final data = Map<String, dynamic>.from(document.data() as Map);
+
+    // Ambil SOAP dari field "soap" atau langsung dari root
+    final soap = Map<String, dynamic>.from(data['soap'] ?? {});
+    final subjective = soap['subjective'] ?? data['subjective'];
+    final objective = soap['objective'] ?? data['objective'];
+    final assessment = soap['assessment'] ?? data['assessment'];
+    final plan = soap['plan'] ?? data['plan'];
+    final instruction = soap['instruction'] ?? data['instruction'];
+
+    // Ambil tambahan
+    final tambahan = Map<String, dynamic>.from(data['tambahan'] ?? {});
+
+    // Ambil daftar obat
+    final obatList = List<Map<String, dynamic>>.from(data['obat_list'] ?? []);
 
     return Scaffold(
       appBar: AppBar(
@@ -21,25 +35,58 @@ class DetailRekamMedisPage extends StatelessWidget {
           children: [
             _buildDetailItem('Nama Pasien', data['nama_pasien']),
             _buildDetailItem('Nomor RM', data['no_rm']),
-            
-            // Barcode Section
             const SizedBox(height: 16),
             _buildBarcodeSection(data['no_rm']),
-            
             const Divider(height: 32),
 
-            _buildDetailItem('Subjective (S)', data['subjective']),
-            _buildDetailItem('Objective (O)', data['objective']),
-            _buildDetailItem('Assessment (A)', data['assessment']),
-            _buildDetailItem('Plan (P)', data['plan']),
-            _buildDetailItem('Instruction (I)', data['instruction']),
+            // SOAPI
+            _buildDetailItem('Subjective (S)', subjective),
+            _buildDetailItem('Objective (O)', objective),
+            _buildDetailItem('Assessment (A)', assessment),
+            _buildDetailItem('Plan (P)', plan),
+            _buildDetailItem('Instruction (I)', instruction),
+
+            const Divider(height: 32),
+
+            // Tambahan
+            if (tambahan.isNotEmpty) ...[
+              const Text(
+                'Tambahan',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...tambahan.entries.map((e) =>
+                  _buildDetailItem(e.key, e.value?.toString())),
+              const Divider(height: 32),
+            ],
+
+            // Daftar Obat
+            if (obatList.isNotEmpty) ...[
+              const Text(
+                'Daftar Obat',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...obatList.map((obat) {
+                final nama = obat['nama'] ?? '-';
+                final dosis = obat['dosis'] ?? '-';
+                final jumlah = obat['jumlah']?.toString() ?? '-';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    '$nama — Dosis: $dosis — Jumlah: $jumlah',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                );
+              }),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailItem(String label, String? value) {
+  Widget _buildDetailItem(String label, dynamic value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: RichText(
@@ -52,7 +99,7 @@ class DetailRekamMedisPage extends StatelessWidget {
           ),
           children: [
             TextSpan(
-              text: value ?? '-',
+              text: value?.toString() ?? '-',
               style: const TextStyle(
                 fontWeight: FontWeight.normal,
                 fontSize: 16,
@@ -90,7 +137,8 @@ class DetailRekamMedisPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: Colors.grey[400]!),
@@ -101,10 +149,6 @@ class DetailRekamMedisPage extends StatelessWidget {
               data: noRm,
               width: 250,
               height: 80,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black,
-              ),
             ),
           ),
           const SizedBox(height: 8),

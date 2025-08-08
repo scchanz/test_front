@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:test_front/pages/barcode/scan_barcode.dart';
 import 'package:test_front/pages/rekammedis/menu_rm.dart';
 import 'package:test_front/pages/rekammedis/list_rm.dart';
-import 'package:test_front/pages/barcode/scan_barcode_page.dart';
 
 class CustomDrawer extends StatelessWidget {
   final User user;
