@@ -43,6 +43,7 @@ dependencies:
   google_sign_in: ^5.4.0
   barcode_widget: ^2.0.4
   mobile_scanner: ^5.0.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
