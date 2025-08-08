@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/pages/home/widgets/stats_card.dart';
-import 'package:test_front/pages/home/widgets/welcome_card.dart';
 import 'package:test_front/pages/pasien/register_patient.dart';
 import 'package:test_front/components/customdrawer.dart';
 import 'package:test_front/pages/profile/edit_profile.dart';
@@ -19,7 +18,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+
+class _HomePageState extends State<HomePage>
+  with TickerProviderStateMixin {
+
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+
   late AnimationController _pageAnimationController;
   late AnimationController _fabAnimationController;
   late Animation<double> _fadeAnimation;
