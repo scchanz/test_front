@@ -19,7 +19,12 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
   final planController = TextEditingController();
   final instructionController = TextEditingController();
 
+  // 🟢 Controller untuk obat
+  List<Map<String, TextEditingController>> obatControllers = [];
+
+  // 🟢 Controller untuk field tambahan
   Map<String, TextEditingController> tambahanControllers = {};
+
   bool isLoading = false;
 
   Future<void> _navigateToTambahMenu() async {
@@ -45,6 +50,13 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
             entry.key: entry.value.text
         };
 
+        final List<Map<String, dynamic>> obatData = obatControllers.map((map) {
+          return {
+            'nama_obat': map['nama']!.text,
+            'dosis': map['dosis']!.text,
+          };
+        }).toList();
+
         await FirebaseFirestore.instance.collection('rekam_medis').add({
           'no_rm': noRmController.text,
           'nama_pasien': namaPasienController.text,
@@ -53,6 +65,7 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
           'assessment': assessmentController.text,
           'plan': planController.text,
           'instruction': instructionController.text,
+          'obat': obatData,
           'tambahan': tambahanData,
           'timestamp': Timestamp.now(),
         });
@@ -80,10 +93,18 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     assessmentController.clear();
     planController.clear();
     instructionController.clear();
+
     for (var controller in tambahanControllers.values) {
       controller.dispose();
     }
     tambahanControllers.clear();
+
+    for (var map in obatControllers) {
+      map['nama']?.dispose();
+      map['dosis']?.dispose();
+    }
+    obatControllers.clear();
+
     setState(() {});
   }
 
@@ -96,9 +117,15 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     assessmentController.dispose();
     planController.dispose();
     instructionController.dispose();
+
     for (var controller in tambahanControllers.values) {
       controller.dispose();
     }
+    for (var map in obatControllers) {
+      map['nama']?.dispose();
+      map['dosis']?.dispose();
+    }
+
     super.dispose();
   }
 
@@ -157,6 +184,79 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     );
   }
 
+  // 🟢 Form dinamis untuk obat
+  Widget _buildObatForms() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Daftar Obat",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        ...obatControllers.asMap().entries.map((entry) {
+          final index = entry.key;
+          final map = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    controller: map['nama'],
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Obat',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Harus diisi' : null,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 1,
+                  child: TextFormField(
+                    controller: map['dosis'],
+                    decoration: const InputDecoration(
+                      labelText: 'Dosis',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Harus diisi' : null,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      map['nama']?.dispose();
+                      map['dosis']?.dispose();
+                      obatControllers.removeAt(index);
+                    });
+                  },
+                ),
+              ],
+            ),
+          );
+        }),
+        OutlinedButton.icon(
+          onPressed: () {
+            setState(() {
+              obatControllers.add({
+                'nama': TextEditingController(),
+                'dosis': TextEditingController(),
+              });
+            });
+          },
+          icon: const Icon(Icons.add),
+          label: const Text("Tambah Obat"),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,10 +275,13 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
               _buildTextField(planController, 'Plan', maxLines: 3),
               _buildTextField(instructionController, 'Instruction', maxLines: 3),
 
-              // Tambahan dynamic form di atas tombol
-              _buildTambahanForms(),
               const SizedBox(height: 16),
+              _buildObatForms(),
 
+              const SizedBox(height: 16),
+              _buildTambahanForms(),
+
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _navigateToTambahMenu,
                 child: const Text('Tambahkan Lainnya'),
