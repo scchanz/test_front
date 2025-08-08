@@ -18,7 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>
-    with TickerProviderStateMixin {
+  with TickerProviderStateMixin {
   late AnimationController _pageAnimationController;
   late AnimationController _fabAnimationController;
   late Animation<double> _fadeAnimation;
