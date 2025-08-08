@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/pages/home/widgets/stats_card.dart';
 import 'package:test_front/pages/pasien/register_patient.dart';
 import 'package:test_front/components/customdrawer.dart';
+import 'package:test_front/pages/profile/edit_profile.dart';
 import 'package:test_front/pages/rekammedis/input_rm.dart';
-import 'package:test_front/pages/rekammedis/lihat_rm.dart';
+import 'package:test_front/pages/rekammedis/list_rm.dart';
 import 'package:test_front/components/customnotification.dart';
 import 'package:test_front/pages/login/login_page.dart';
 
@@ -17,8 +18,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+
 class _HomePageState extends State<HomePage>
   with TickerProviderStateMixin {
+
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+
   late AnimationController _pageAnimationController;
   late AnimationController _fabAnimationController;
   late Animation<double> _fadeAnimation;
@@ -28,40 +33,38 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    
+
     _pageAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fabAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pageAnimationController,
-      curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _pageAnimationController,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
+      ),
+    );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _pageAnimationController,
-      curve: const Interval(0.0, 0.8, curve: Curves.elasticOut),
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _pageAnimationController,
+            curve: const Interval(0.0, 0.8, curve: Curves.elasticOut),
+          ),
+        );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabAnimationController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _fabAnimationController,
+        curve: Curves.elasticOut,
+      ),
+    );
 
     _pageAnimationController.forward();
     Future.delayed(const Duration(milliseconds: 800), () {
@@ -78,7 +81,8 @@ class _HomePageState extends State<HomePage>
 
   String _getUsername() {
     // Prioritas: displayName > email username > 'Tamu'
-    if (widget.user.displayName != null && widget.user.displayName!.isNotEmpty) {
+    if (widget.user.displayName != null &&
+        widget.user.displayName!.isNotEmpty) {
       return widget.user.displayName!;
     }
     if (widget.user.email != null) {
@@ -107,10 +111,7 @@ class _HomePageState extends State<HomePage>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-          width: borderWidth,
-        ),
+        border: Border.all(color: Colors.white, width: borderWidth),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -119,9 +120,7 @@ class _HomePageState extends State<HomePage>
           ),
         ],
       ),
-      child: ClipOval(
-        child: _buildProfileImageContent(size),
-      ),
+      child: ClipOval(child: _buildProfileImageContent(size)),
     );
   }
 
@@ -165,11 +164,12 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildDefaultAvatar(double size) {
     final username = _getUsername();
-    final initials = username.isNotEmpty 
-        ? username.split(' ')
-            .take(2)
-            .map((name) => name.isNotEmpty ? name[0].toUpperCase() : '')
-            .join()
+    final initials = username.isNotEmpty
+        ? username
+              .split(' ')
+              .take(2)
+              .map((name) => name.isNotEmpty ? name[0].toUpperCase() : '')
+              .join()
         : 'T';
 
     return Container(
@@ -180,10 +180,7 @@ class _HomePageState extends State<HomePage>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF667eea),
-            Color(0xFF764ba2),
-          ],
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
         ),
       ),
       child: Center(
@@ -225,10 +222,7 @@ class _HomePageState extends State<HomePage>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF8FAFF),
-              Color(0xFFFFFFFF),
-            ],
+            colors: [Color(0xFFF8FAFF), Color(0xFFFFFFFF)],
             stops: [0.0, 0.3],
           ),
         ),
@@ -248,37 +242,37 @@ class _HomePageState extends State<HomePage>
                       children: [
                         // Enhanced Welcome Section with Profile Photo
                         _buildEnhancedWelcomeCard(greeting, username),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Quick Actions Section
                         _buildSectionHeader(
                           'Menu Utama',
                           'Pilih menu yang ingin Anda akses',
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Action Cards with staggered animation
                         _buildActionCards(context),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Stats Section
                         _buildSectionHeader(
                           'Ringkasan Data',
                           'Statistik dan informasi penting',
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         const StatsCard(),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Recent Activity Section
                         _buildRecentActivity(),
-                        
+
                         const SizedBox(height: 100), // Space for FAB
                       ],
                     ),
@@ -288,7 +282,7 @@ class _HomePageState extends State<HomePage>
             },
           ),
         ),
-      ),      
+      ),
     );
   }
 
@@ -300,10 +294,7 @@ class _HomePageState extends State<HomePage>
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF667eea),
-            Color(0xFF764ba2),
-          ],
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -318,9 +309,9 @@ class _HomePageState extends State<HomePage>
         children: [
           // Profile Photo
           _buildProfileImage(size: 70),
-          
+
           const SizedBox(width: 16),
-          
+
           // User Info
           Expanded(
             child: Column(
@@ -357,7 +348,7 @@ class _HomePageState extends State<HomePage>
               ],
             ),
           ),
-          
+
           // Login Provider Indicator
           _buildLoginProviderIndicator(),
         ],
@@ -368,7 +359,7 @@ class _HomePageState extends State<HomePage>
   Widget _buildLoginProviderIndicator() {
     // Deteksi provider login
     bool isGoogleLogin = false;
-    
+
     // Cek apakah user login dengan Google
     for (final providerData in widget.user.providerData) {
       if (providerData.providerId == 'google.com') {
@@ -383,10 +374,7 @@ class _HomePageState extends State<HomePage>
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -432,19 +420,12 @@ class _HomePageState extends State<HomePage>
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.email,
-            size: 12,
-            color: Colors.white,
-          ),
+          Icon(Icons.email, size: 12, color: Colors.white),
           SizedBox(width: 4),
           Text(
             'Email',
@@ -596,7 +577,7 @@ class _HomePageState extends State<HomePage>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Profile info
             Row(
               children: [
@@ -626,17 +607,20 @@ class _HomePageState extends State<HomePage>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 20),
             const Divider(),
-            
+
             // Menu items
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('Edit Profil'),
               onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to edit profile
+                Navigator.pop(context); // Tutup drawer atau bottom sheet
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                );
               },
             ),
             ListTile(
@@ -671,10 +655,7 @@ class _HomePageState extends State<HomePage>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF667eea),
-                  Color(0xFF764ba2),
-                ],
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
               ),
               boxShadow: [
                 BoxShadow(
@@ -693,10 +674,7 @@ class _HomePageState extends State<HomePage>
               elevation: 0,
               label: const Text(
                 'Input Cepat',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               icon: const Icon(Icons.add_rounded),
             ),
@@ -824,11 +802,7 @@ class _HomePageState extends State<HomePage>
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -946,11 +920,7 @@ class _HomePageState extends State<HomePage>
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -968,10 +938,7 @@ class _HomePageState extends State<HomePage>
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
