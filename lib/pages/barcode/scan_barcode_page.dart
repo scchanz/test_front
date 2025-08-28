@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_front/pages/barcode/rekam_medis_service.dart';
-import 'package:test_front/pages/barcode/result_dialog.dart';
-import 'package:test_front/pages/barcode/scanner_overlay.dart';
+import 'package:test_front/pages/barcode/widgets/rekam_medis_service.dart';
+import 'package:test_front/pages/barcode/widgets/result_dialog.dart';
+import 'package:test_front/pages/barcode/widgets/scanner_overlay.dart';
 import 'package:test_front/pages/rekammedis/detail_rm.dart';
 
 
