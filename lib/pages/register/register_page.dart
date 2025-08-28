@@ -19,6 +19,12 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  // Hospital Green Color Theme
+  static const Color primaryGreen = Color(0xFF2E8B57); // Sea Green
+  static const Color lightGreen = Color(0xFF90EE90); // Light Green
+  static const Color darkGreen = Color(0xFF228B22); // Forest Green
+  static const Color backgroundColor = Color(0xFFF0FFF0); // Honeydew
+
   @override
   void initState() {
     super.initState();
@@ -66,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                 const Text('Akun berhasil dibuat. Silakan login.'),
               ],
             ),
-            backgroundColor: Colors.green.shade600,
+            backgroundColor: primaryGreen,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             duration: const Duration(seconds: 3),
@@ -117,17 +123,10 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF667eea),
-              const Color(0xFF764ba2),
-              const Color(0xFF6B73FF),
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: backgroundColor,
         ),
         child: SafeArea(
           child: Center(
@@ -166,13 +165,11 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                                ),
+                                color: primaryGreen,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF667eea).withOpacity(0.3),
+                                    color: primaryGreen.withOpacity(0.3),
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),
@@ -228,12 +225,12 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF667eea).withOpacity(0.1),
+                                      color: primaryGreen.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.email_outlined,
-                                      color: Color(0xFF667eea),
+                                      color: primaryGreen,
                                       size: 20,
                                     ),
                                   ),
@@ -246,7 +243,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF667eea),
+                                      color: primaryGreen,
                                       width: 2,
                                     ),
                                   ),
@@ -289,12 +286,12 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF667eea).withOpacity(0.1),
+                                      color: primaryGreen.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.lock_outline,
-                                      color: Color(0xFF667eea),
+                                      color: primaryGreen,
                                       size: 20,
                                     ),
                                   ),
@@ -320,7 +317,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: const BorderSide(
-                                      color: Color(0xFF667eea),
+                                      color: primaryGreen,
                                       width: 2,
                                     ),
                                   ),
@@ -382,12 +379,10 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               height: 54,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                                ),
+                                color: primaryGreen,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF667eea).withOpacity(0.4),
+                                    color: primaryGreen.withOpacity(0.4),
                                     blurRadius: 15,
                                     offset: const Offset(0, 8),
                                   ),
@@ -396,7 +391,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _register,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
+                                  backgroundColor: primaryGreen,
                                   foregroundColor: Colors.white,
                                   shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
@@ -450,11 +445,11 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                       child: const Text(
                                         'Masuk',
                                         style: TextStyle(
-                                          color: Color(0xFF667eea),
+                                          color: primaryGreen,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
                                           decoration: TextDecoration.underline,
-                                          decorationColor: Color(0xFF667eea),
+                                          decorationColor: primaryGreen,
                                         ),
                                       ),
                                     ),

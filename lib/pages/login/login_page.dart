@@ -29,6 +29,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   late Animation<double> _cardSlideAnimation;
   late Animation<double> _cardScaleAnimation;
 
+  // Hospital green color palette
+  static const Color primaryGreen = Color(0xFF4CAF50);      // Main green
+  static const Color lightGreen = Color(0xFF81C784);        // Light green
+  static const Color paleGreen = Color(0xFFE8F5E8);         // Very light green
+  static const Color mintGreen = Color(0xFFA5D6A7);         // Mint green
+  static const Color backgroundGreen = Color(0xFFF1F8E9);   // Background green
+
   @override
   void initState() {
     super.initState();
@@ -234,25 +241,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Decorative elements with enhanced design
+              // Decorative elements with hospital green design
               FadeTransition(
                 opacity: _titleFadeAnimation,
                 child: Row(
                   children: [
-                    // Animated gradient bar
+                    // Simple gradient bar in hospital green
                     Container(
                       width: 6,
                       height: 50,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white,
-                            Colors.white.withOpacity(0.8),
-                            Colors.white.withOpacity(0.4),
-                          ],
-                        ),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(3),
                         boxShadow: [
                           BoxShadow(
@@ -270,59 +269,41 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Enhanced main greeting with sparkle effect
-                            ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                colors: [
-                                  Colors.white,
-                                  Colors.white.withOpacity(0.95),
-                                  Colors.white.withOpacity(0.9),
+                            // Enhanced main greeting
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Selamat Datang',
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: -1.5,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: ' ✨',
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ],
-                                stops: [0.0, 0.5, 1.0],
-                              ).createShader(bounds),
-                              child: RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: 'Selamat Datang',
-                                      style: TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        letterSpacing: -1.5,
-                                        height: 1.1,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: ' ✨',
-                                      style: TextStyle(
-                                        fontSize: 32,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ),
                             ),
                             SizedBox(height: 8),
                             
-                            // Enhanced subtitle with better typography
-                            ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.95),
-                                  Colors.white.withOpacity(0.8)
-                                ],
-                              ).createShader(bounds),
-                              child: Text(
-                                'Kami rindu dengan kehadiran Anda\nMari mulai perjalanan luar biasa ini!',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.3,
-                                  height: 1.4,
-                                ),
+                            // Enhanced subtitle
+                            Text(
+                              'Kami rindu dengan kehadiran Anda\nMari mulai perjalanan luar biasa ini!',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.3,
+                                height: 1.4,
                               ),
                             ),
                           ],
@@ -381,16 +362,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       body: Container(
         height: size.height,
         decoration: BoxDecoration(
+          // Simplified hospital green gradient
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-              Color(0xFF6B73FF),
-              Color(0xFF9575FF),
+              primaryGreen,
+              lightGreen,
             ],
-            stops: [0.0, 0.4, 0.7, 1.0],
+            stops: [0.0, 1.0],
           ),
         ),
         child: SafeArea(
@@ -411,7 +391,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                       SizedBox(height: size.height * 0.05),
 
-                      // Enhanced Card with better animations and styling
+                      // Enhanced Card with hospital green accents
                       AnimatedBuilder(
                         animation: _cardAnimationController,
                         builder: (context, child) {
@@ -436,7 +416,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       offset: Offset(0, 10),
                                     ),
                                     BoxShadow(
-                                      color: Color(0xFF667eea).withOpacity(0.1),
+                                      color: primaryGreen.withOpacity(0.1),
                                       blurRadius: 60,
                                       offset: Offset(0, 30),
                                     ),
@@ -469,17 +449,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             prefixIcon: Container(
                                               margin: EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Color(0xFF667eea).withOpacity(0.15),
-                                                    Color(0xFF764ba2).withOpacity(0.15),
-                                                  ],
-                                                ),
+                                                color: paleGreen,
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Icon(
                                                 Icons.email_outlined,
-                                                color: Color(0xFF667eea),
+                                                color: primaryGreen,
                                                 size: 22,
                                               ),
                                             ),
@@ -490,12 +465,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(18),
                                               borderSide: BorderSide(
-                                                color: Color(0xFF667eea),
+                                                color: primaryGreen,
                                                 width: 2.5,
                                               ),
                                             ),
                                             filled: true,
-                                            fillColor: Colors.grey[45],
+                                            fillColor: Colors.grey[50],
                                             contentPadding: EdgeInsets.symmetric(
                                               horizontal: 24,
                                               vertical: 20,
@@ -506,7 +481,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                                       SizedBox(height: 24),
 
-                                      // Password Field with enhanced styling
+                                      // Password Field with hospital green styling
                                       Container(
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(18),
@@ -529,17 +504,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             prefixIcon: Container(
                                               margin: EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Color(0xFF667eea).withOpacity(0.15),
-                                                    Color(0xFF764ba2).withOpacity(0.15),
-                                                  ],
-                                                ),
+                                                color: paleGreen,
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Icon(
                                                 Icons.lock_outlined,
-                                                color: Color(0xFF667eea),
+                                                color: primaryGreen,
                                                 size: 22,
                                               ),
                                             ),
@@ -563,12 +533,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(18),
                                               borderSide: BorderSide(
-                                                color: Color(0xFF667eea),
+                                                color: primaryGreen,
                                                 width: 2.5,
                                               ),
                                             ),
                                             filled: true,
-                                            fillColor: Colors.grey[45],
+                                            fillColor: Colors.grey[50],
                                             contentPadding: EdgeInsets.symmetric(
                                               horizontal: 24,
                                               vertical: 20,
@@ -596,7 +566,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                             child: Text(
                                               'Lupa Password?',
                                               style: TextStyle(
-                                                color: Color(0xFF667eea),
+                                                color: primaryGreen,
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 15,
                                               ),
@@ -641,29 +611,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         SizedBox(height: 24),
                                       ],
 
-                                      // Enhanced Login Button with better gradient and shadow
+                                      // Login Button with hospital green color
                                       Container(
                                         width: double.infinity,
                                         height: 60,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(18),
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Color(0xFF667eea),
-                                              Color(0xFF764ba2),
-                                              Color(0xFF9575FF),
-                                            ],
-                                          ),
+                                          color: primaryGreen,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Color(0xFF667eea).withOpacity(0.4),
+                                              color: primaryGreen.withOpacity(0.3),
                                               blurRadius: 20,
                                               offset: Offset(0, 10),
-                                            ),
-                                            BoxShadow(
-                                              color: Color(0xFF764ba2).withOpacity(0.2),
-                                              blurRadius: 30,
-                                              offset: Offset(0, 15),
                                             ),
                                           ],
                                         ),
@@ -672,7 +631,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                               ? null
                                               : _loginWithEmailPassword,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
+                                            backgroundColor: primaryGreen,
                                             foregroundColor: Colors.white,
                                             shadowColor: Colors.transparent,
                                             shape: RoundedRectangleBorder(
@@ -733,7 +692,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                                       SizedBox(height: 28),
 
-                                      // Enhanced Google Sign In Button
+                                      // Google Sign In Button
                                       Container(
                                         width: double.infinity,
                                         height: 60,
@@ -796,7 +755,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                       SizedBox(height: 36),
 
-                      // Enhanced registration prompt
+                      // Registration prompt with hospital green theme
                       Center(
                         child: Container(
                           padding: EdgeInsets.symmetric(
@@ -804,12 +763,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             vertical: 16,
                           ),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withOpacity(0.15),
-                                Colors.white.withOpacity(0.08),
-                              ],
-                            ),
+                            color: Colors.white.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(25),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.25),
