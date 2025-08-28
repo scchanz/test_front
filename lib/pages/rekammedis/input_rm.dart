@@ -170,59 +170,31 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
   Widget _buildTambahanForms() {
     return Column(
       children: tambahanControllers.entries.map((entry) {
-        final meta = tambahanMenuMeta[entry.key];
-        final tipe = meta?['tipe'] ?? 'single';
-        final opsi = meta?['opsi'] ?? [];
-
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: tipe == 'list'
-                    ? DropdownButtonFormField<String>(
-                        value: entry.value,
-                        decoration: InputDecoration(
-                          labelText: entry.key,
-                          border: const OutlineInputBorder(),
-                        ),
-                        items: (opsi as List)
-                            .map<DropdownMenuItem<String>>((o) => DropdownMenuItem(
-                                  value: o.toString(),
-                                  child: Text(o.toString()),
-                                ))
-                            .toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            tambahanControllers[entry.key] = val;
-                          });
-                        },
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Pilih salah satu' : null,
-                      )
-                    : TextFormField(
-                        controller: entry.value,
-                        maxLines: 2,
-                        decoration: InputDecoration(
-                          labelText: entry.key,
-                          border: const OutlineInputBorder(),
-                        ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Tidak boleh kosong'
-                            : null,
-                      ),
+                child: TextFormField(
+                  controller: entry.value,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: entry.key,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Tidak boleh kosong'
+                      : null,
+                ),
               ),
               const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.red),
                 onPressed: () {
                   setState(() {
-                    if (tipe == 'single') {
-                      entry.value.dispose();
-                    }
+                    entry.value.dispose();
                     tambahanControllers.remove(entry.key);
-                    tambahanMenuMeta.remove(entry.key);
                   });
                 },
               ),
@@ -325,16 +297,10 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
               _buildTextField(instructionController, 'Instruction', maxLines: 3),
 
               const SizedBox(height: 16),
-              _buildObatForms(),
-
-              const SizedBox(height: 16),
               _buildTambahanForms(),
 
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _navigateToTambahMenu,
-                child: const Text('Tambahkan Lainnya'),
-              ),
+              _buildObatForms(),
               const SizedBox(height: 20),
 
               isLoading

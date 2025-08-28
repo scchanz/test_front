@@ -78,6 +78,7 @@ class _RegisterPatientPageState extends State<RegisterPatientPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Registrasi Pasien'),
         backgroundColor: Colors.white,
