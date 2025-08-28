@@ -23,7 +23,8 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
   List<Map<String, TextEditingController>> obatControllers = [];
 
   // 🟢 Controller untuk field tambahan
-  Map<String, TextEditingController> tambahanControllers = {};
+  Map<String, dynamic> tambahanControllers = {}; // value: TextEditingController atau String (selected option)
+  Map<String, Map<String, dynamic>> tambahanMenuMeta = {}; // key: nama menu, value: {tipe, opsi}
 
   bool isLoading = false;
 
@@ -34,9 +35,27 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     );
 
     if (result != null && !tambahanControllers.containsKey(result)) {
-      setState(() {
-        tambahanControllers[result] = TextEditingController();
-      });
+      // Ambil meta menu dari Firestore
+      final snap = await FirebaseFirestore.instance
+          .collection('menu_tambahan')
+          .where('nama', isEqualTo: result)
+          .limit(1)
+          .get();
+
+      if (snap.docs.isNotEmpty) {
+        final data = snap.docs.first.data();
+        final tipe = data['tipe'] ?? 'single';
+        final opsi = (data['opsi'] ?? []) as List<dynamic>;
+
+        setState(() {
+          tambahanMenuMeta[result] = {'tipe': tipe, 'opsi': opsi};
+          if (tipe == 'list') {
+            tambahanControllers[result] = null; // selected value, null awalnya
+          } else {
+            tambahanControllers[result] = TextEditingController();
+          }
+        });
+      }
     }
   }
 
@@ -47,7 +66,9 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
       try {
         final Map<String, dynamic> tambahanData = {
           for (var entry in tambahanControllers.entries)
-            entry.key: entry.value.text
+            entry.key: tambahanMenuMeta[entry.key]?['tipe'] == 'list'
+                ? entry.value
+                : entry.value.text
         };
 
         final List<Map<String, dynamic>> obatData = obatControllers.map((map) {
@@ -149,31 +170,59 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
   Widget _buildTambahanForms() {
     return Column(
       children: tambahanControllers.entries.map((entry) {
+        final meta = tambahanMenuMeta[entry.key];
+        final tipe = meta?['tipe'] ?? 'single';
+        final opsi = meta?['opsi'] ?? [];
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: TextFormField(
-                  controller: entry.value,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: entry.key,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Tidak boleh kosong'
-                      : null,
-                ),
+                child: tipe == 'list'
+                    ? DropdownButtonFormField<String>(
+                        value: entry.value,
+                        decoration: InputDecoration(
+                          labelText: entry.key,
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: (opsi as List)
+                            .map<DropdownMenuItem<String>>((o) => DropdownMenuItem(
+                                  value: o.toString(),
+                                  child: Text(o.toString()),
+                                ))
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            tambahanControllers[entry.key] = val;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Pilih salah satu' : null,
+                      )
+                    : TextFormField(
+                        controller: entry.value,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: entry.key,
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Tidak boleh kosong'
+                            : null,
+                      ),
               ),
               const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.red),
                 onPressed: () {
                   setState(() {
-                    entry.value.dispose();
+                    if (tipe == 'single') {
+                      entry.value.dispose();
+                    }
                     tambahanControllers.remove(entry.key);
+                    tambahanMenuMeta.remove(entry.key);
                   });
                 },
               ),
