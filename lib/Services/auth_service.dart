@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -28,7 +28,7 @@ class AuthService {
     final cred = await _auth.signInAnonymously();
     return cred.user;
   }
-
+ 
   // 🚪 Logout
   Future<void> signOut() async {
     await _auth.signOut();
@@ -117,21 +117,13 @@ class LoginController {
     isLoading = true;
     errorMessage = null;
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        isLoading = false;
-        return;
+      final provider = GoogleAuthProvider();
+      provider.setCustomParameters({'prompt': 'select_account'});
+      if (kIsWeb) {
+        await _auth.signInWithPopup(provider);
+      } else {
+        await _auth.signInWithProvider(provider);
       }
-      final googleAuth = await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-      if (idToken == null) {
-        errorMessage = 'Login Google gagal: token tidak valid';
-        isLoading = false;
-        return;
-      }
-      final credential = GoogleAuthProvider.credential(idToken: idToken);
-      await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       errorMessage = _getErrorMessage(e.code);
     } catch (e) {
