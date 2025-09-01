@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:test_front/pages/barcode/scan_barcode.dart';
+import 'package:test_front/pages/barcode/scan_barcode_page.dart';
 import 'package:test_front/pages/rekammedis/menu_rm.dart';
 import 'package:test_front/pages/rekammedis/list_rm.dart';
 
@@ -97,7 +97,6 @@ class CustomDrawer extends StatelessWidget {
               ],
             ),
           ),
-          _buildLogoutButton(context),
         ],
       ),
     );
@@ -164,63 +163,9 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: ListTile(
-        leading: const Icon(
-          Icons.logout,
-          color: Colors.red,
-          size: 22,
-        ),
-        title: const Text(
-          'Keluar',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.red,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        onTap: () => _showLogoutDialog(context),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-      ),
-    );
-  }
+  
 
- void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Konfirmasi'),
-        content: const Text('Yakin ingin keluar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop(); // Tutup dialog
-              await FirebaseAuth.instance.signOut(); // Logout
-
-              // Arahkan ke halaman login dan hapus semua route sebelumnya
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/login',
-                (route) => false,
-              );
-            },
-            child: const Text(
-              'Keluar',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+ 
 
   void _showComingSoon(BuildContext context, String feature) {
     showDialog(

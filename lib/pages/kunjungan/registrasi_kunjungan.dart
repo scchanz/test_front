@@ -63,6 +63,7 @@ class _RegistrasiKunjunganPageState extends State<RegistrasiKunjunganPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Registrasi Kunjungan")),
       body: Padding(
         padding: const EdgeInsets.all(16),
