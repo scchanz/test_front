@@ -52,7 +52,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
     await menuCollection.add({
       'nama': name,
       'tipe': inputType,
-      if (inputType == 'list') 'opsi': options, // <-- Simpan opsi jika list
+      if (inputType == 'list') 'opsi': List<String>.from(options),
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -153,13 +153,21 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
 
               // Form Tambahan Jika Tipe = List (pindah ke atas)
               if (inputType == 'list') ...[
+                // Penjelasan bahwa opsi adalah field anak
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: const Text(
+                    'Tambahkan nama field anak (sub-form) untuk menu bertipe List.',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ),
                 Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: optionController,
                         decoration: const InputDecoration(
-                          labelText: 'Tambah Opsi',
+                          labelText: 'Nama Field Anak',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -183,7 +191,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Opsi List:",
+                          "Field Anak (Sub-form):",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 6),

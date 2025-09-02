@@ -23,21 +23,37 @@ class DetailRekamMedisPage extends StatelessWidget {
     final tambahan = Map<String, dynamic>.from(data['tambahan'] ?? {});
 
     // Ambil daftar obat
-    final obatList = List<Map<String, dynamic>>.from(data['obat_list'] ?? []);
+    final obatList = List<Map<String, dynamic>>.from(
+      data['obat'] ?? data['obat_list'] ?? [],
+    );
+
+    final noRm = data['no_rm']?.toString() ?? '';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Rekam Medis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_2),
+            tooltip: 'Barcode Nomor RM',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => BarcodeRmPage(noRm: noRm)),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             _buildDetailItem('Nama Pasien', data['nama_pasien']),
-            _buildDetailItem('Nomor RM', data['no_rm']),
+            _buildDetailItem('Nomor RM', noRm),
             const SizedBox(height: 16),
-            _buildBarcodeSection(data['no_rm']),
-            const Divider(height: 32),
+            // Barcode dipindahkan ke dialog, tidak ditampilkan di sini
+            // const Divider(height: 32),
 
             // SOAPI
             _buildDetailItem('Subjective (S)', subjective),
@@ -55,8 +71,28 @@ class DetailRekamMedisPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...tambahan.entries.map((e) =>
-                  _buildDetailItem(e.key, e.value?.toString())),
+              ...tambahan.entries.map((e) {
+                final value = e.value;
+                // Jika value adalah Map dan punya 'parent' dan 'children', tampilkan terstruktur
+                if (value is Map &&
+                    value.containsKey('parent') &&
+                    value.containsKey('children')) {
+                  final children =
+                      value['children'] as Map<String, dynamic>? ?? {};
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDetailItem('${e.key} (Parent)', value['parent']),
+                      ...children.entries.map(
+                        (c) => _buildDetailItem('↳ ${c.key}', c.value),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  );
+                } else {
+                  return _buildDetailItem(e.key, value?.toString());
+                }
+              }),
               const Divider(height: 32),
             ],
 
@@ -137,8 +173,10 @@ class DetailRekamMedisPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Container(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 16.0,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: Colors.grey[400]!),
@@ -154,12 +192,44 @@ class DetailRekamMedisPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'No. RM: $noRm',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Halaman baru untuk barcode RM
+class BarcodeRmPage extends StatelessWidget {
+  final String noRm;
+  const BarcodeRmPage({super.key, required this.noRm});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Barcode Nomor RM')),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BarcodeWidget(
+              barcode: Barcode.code128(),
+              data: noRm,
+              width: 220,
+              height: 60,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              noRm,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
