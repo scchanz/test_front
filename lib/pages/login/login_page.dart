@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:test_front/pages/home/home_page.dart';
 import 'package:test_front/pages/register/register_page.dart';
 
@@ -172,25 +172,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       _errorMessage = null;
     });
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
+      final provider = GoogleAuthProvider();
+      provider.setCustomParameters({'prompt': 'select_account'});
+      if (kIsWeb) {
+        await _auth.signInWithPopup(provider);
+      } else {
+        await _auth.signInWithProvider(provider);
       }
-      final googleAuth = await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-      if (idToken == null) {
-        setState(() {
-          _errorMessage = 'Login Google gagal: token tidak valid';
-          _isLoading = false;
-        });
-        return;
-      }
-      final credential = GoogleAuthProvider.credential(idToken: idToken);
-      await _auth.signInWithCredential(credential);
       final user = _auth.currentUser;
       if (user != null) {
         Navigator.pushReplacement(

@@ -1,4 +1,5 @@
 {
+    "cmake.sourceDirectory": "/home/airlangga/test_front/linux",
     "vscode-pets.petSize": "small",
     "files.autoSave": "afterDelay"
 }

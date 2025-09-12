@@ -23,7 +23,10 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
   List<Map<String, TextEditingController>> obatControllers = [];
 
   // 🟢 Controller untuk field tambahan
-  Map<String, TextEditingController> tambahanControllers = {};
+  Map<String, dynamic> tambahanControllers =
+      {}; // value: TextEditingController (parent) + Map<String, TextEditingController> (children)
+  Map<String, Map<String, dynamic>> tambahanMenuMeta =
+      {}; // key: nama menu, value: {tipe, opsi}
 
   bool isLoading = false;
 
@@ -34,9 +37,97 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     );
 
     if (result != null && !tambahanControllers.containsKey(result)) {
-      setState(() {
-        tambahanControllers[result] = TextEditingController();
-      });
+      // Ambil meta menu dari Firestore
+      final snap = await FirebaseFirestore.instance
+          .collection('menu_tambahan')
+          .where('nama', isEqualTo: result)
+          .limit(1)
+          .get();
+
+      if (snap.docs.isNotEmpty) {
+        final data = snap.docs.first.data();
+        final tipe = data['tipe'] ?? 'single';
+        final opsi = (data['opsi'] ?? []) as List<dynamic>;
+
+        setState(() {
+          tambahanMenuMeta[result] = {'tipe': tipe, 'opsi': opsi};
+          if (tipe == 'list') {
+            tambahanControllers[result] = {
+              'parent': TextEditingController(),
+              'children': {
+                for (var o in opsi) o.toString(): TextEditingController(),
+              },
+            };
+          } else {
+            tambahanControllers[result] = TextEditingController();
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _pickFromMenu() async {
+    // Ambil semua menu dari Firestore
+    final snap = await FirebaseFirestore.instance
+        .collection('menu_tambahan')
+        .orderBy('nama')
+        .get();
+
+    final menus = snap.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'nama': data['nama'],
+        'tipe': data['tipe'],
+        'opsi': data['opsi'] ?? [],
+      };
+    }).toList();
+
+    final selected = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Pilih Menu Tambahan'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: menus.length,
+              itemBuilder: (context, idx) {
+                final menu = menus[idx];
+                final nama = menu['nama'];
+                final tipe = menu['tipe'];
+                return ListTile(
+                  title: Text(nama ?? ''),
+                  subtitle: Text('Tipe: $tipe'),
+                  onTap: () => Navigator.pop(context, menu),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected != null && selected['nama'] != null) {
+      final nama = selected['nama'];
+      final tipe = selected['tipe'];
+      final opsi = selected['opsi'];
+
+      if (!tambahanControllers.containsKey(nama)) {
+        setState(() {
+          tambahanMenuMeta[nama] = {'tipe': tipe, 'opsi': opsi};
+          if (tipe == 'list') {
+            tambahanControllers[nama] = {
+              'parent': TextEditingController(),
+              'children': {
+                for (var o in opsi) o.toString(): TextEditingController(),
+              },
+            };
+          } else {
+            tambahanControllers[nama] = TextEditingController();
+          }
+        });
+      }
     }
   }
 
@@ -47,14 +138,25 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
       try {
         final Map<String, dynamic> tambahanData = {
           for (var entry in tambahanControllers.entries)
-            entry.key: entry.value.text
+            entry.key: tambahanMenuMeta[entry.key]?['tipe'] == 'list'
+                ? {
+                    'parent': entry.value['parent'].text,
+                    'children': {
+                      for (var child
+                          in (tambahanMenuMeta[entry.key]?['opsi'] ?? []))
+                        child.toString():
+                            (entry.value['children']
+                                    as Map<String, TextEditingController>)[child
+                                    .toString()]
+                                ?.text ??
+                            '',
+                    },
+                  }
+                : entry.value.text,
         };
 
         final List<Map<String, dynamic>> obatData = obatControllers.map((map) {
-          return {
-            'nama_obat': map['nama']!.text,
-            'dosis': map['dosis']!.text,
-          };
+          return {'nama_obat': map['nama']!.text, 'dosis': map['dosis']!.text};
         }).toList();
 
         await FirebaseFirestore.instance.collection('rekam_medis').add({
@@ -76,9 +178,9 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
 
         _clearForm();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
       } finally {
         setState(() => isLoading = false);
       }
@@ -129,8 +231,11 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     super.dispose();
   }
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {int maxLines = 1}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextFormField(
@@ -150,44 +255,120 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...tambahanControllers.entries.map((entry) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.value,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      labelText: entry.key,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Tidak boleh kosong'
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      entry.value.dispose();
-                      tambahanControllers.remove(entry.key);
-                    });
-                  },
-                ),
-              ],
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: _pickFromMenu,
+              icon: const Icon(Icons.list),
+              label: const Text('Ambil dari Menu'),
             ),
-          );
-        }).toList(),
-        OutlinedButton.icon(
-          onPressed: _navigateToTambahMenu,
-          icon: const Icon(Icons.add),
-          label: const Text('Tambahkan Lainnya'),
+          ],
         ),
+        const SizedBox(height: 12),
+        ...tambahanControllers.entries.map((entry) {
+          final meta = tambahanMenuMeta[entry.key];
+          final tipe = meta?['tipe'] ?? 'single';
+          final opsi = meta?['opsi'] ?? [];
+
+          if (tipe == 'list') {
+            final parentController =
+                entry.value['parent'] as TextEditingController;
+            final childControllers =
+                entry.value['children'] as Map<String, TextEditingController>;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: parentController,
+                          decoration: InputDecoration(
+                            labelText: entry.key,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Tidak boleh kosong'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            parentController.dispose();
+                            for (var c in childControllers.values) {
+                              c.dispose();
+                            }
+                            tambahanControllers.remove(entry.key);
+                            tambahanMenuMeta.remove(entry.key);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ...opsi.map(
+                    (o) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: TextFormField(
+                        controller: childControllers[o.toString()],
+                        decoration: InputDecoration(
+                          labelText: o.toString(),
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Tidak boleh kosong'
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: entry.value,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        labelText: entry.key,
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Tidak boleh kosong'
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        entry.value.dispose();
+                        tambahanControllers.remove(entry.key);
+                        tambahanMenuMeta.remove(entry.key);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+        }).toList(),
       ],
     );
   }
@@ -281,7 +462,11 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
               _buildTextField(objectiveController, 'Objective', maxLines: 3),
               _buildTextField(assessmentController, 'Assessment', maxLines: 3),
               _buildTextField(planController, 'Plan', maxLines: 3),
-              _buildTextField(instructionController, 'Instruction', maxLines: 3),
+              _buildTextField(
+                instructionController,
+                'Instruction',
+                maxLines: 3,
+              ),
 
               const SizedBox(height: 16),
               _buildTambahanForms(),
@@ -294,7 +479,14 @@ class _InputRekamMedisPageState extends State<InputRekamMedisPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                       onPressed: _submitForm,
-                      child: const Text('Simpan Rekam Medis'),
+                      child: const Text(
+                        'Simpan Rekam Medis',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.green,
+                      ),
                     ),
             ],
           ),

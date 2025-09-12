@@ -11,10 +11,13 @@ class TambahMenuPage extends StatefulWidget {
 
 class _TambahMenuPageState extends State<TambahMenuPage> {
   final TextEditingController menuNameController = TextEditingController();
-  String inputType = 'single';
+  final TextEditingController optionController = TextEditingController();
 
-  final CollectionReference menuCollection =
-      FirebaseFirestore.instance.collection('menu_tambahan');
+  String inputType = 'single';
+  List<String> options = []; // <-- Tambahan untuk menyimpan opsi
+
+  final CollectionReference menuCollection = FirebaseFirestore.instance
+      .collection('menu_tambahan');
 
   Future<void> _addMenu() async {
     final name = menuNameController.text.trim();
@@ -25,25 +28,40 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
       return;
     }
 
+    if (inputType == 'list' && options.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tambahkan minimal 1 opsi untuk tipe list'),
+        ),
+      );
+      return;
+    }
+
     final existing = await menuCollection
         .where('nama', isEqualTo: name)
         .limit(1)
         .get();
 
     if (existing.docs.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Menu sudah ada')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Menu sudah ada')));
       return;
     }
 
-    await menuCollection.add({'nama': name, 'tipe': inputType});
+    await menuCollection.add({
+      'nama': name,
+      'tipe': inputType,
+      if (inputType == 'list') 'opsi': List<String>.from(options),
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Menu "$name" ditambahkan sebagai $inputType')),
     );
 
     menuNameController.clear();
+    optionController.clear();
+    options.clear();
     setState(() => inputType = 'single');
   }
 
@@ -68,9 +86,9 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
 
     if (confirm == true) {
       await menuCollection.doc(docId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Menu "$nama" dihapus')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Menu "$nama" dihapus')));
     }
   }
 
@@ -78,7 +96,9 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
     if (widget.fromDrawer) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Untuk menggunakan menu ini, buka melalui Form Rekam Medis.'),
+          content: Text(
+            'Untuk menggunakan menu ini, buka melalui Form Rekam Medis.',
+          ),
         ),
       );
     } else {
@@ -86,9 +106,24 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
     }
   }
 
+  void _addOption() {
+    final option = optionController.text.trim();
+    if (option.isEmpty) return;
+
+    setState(() {
+      options.add(option);
+      optionController.clear();
+    });
+  }
+
+  void _removeOption(int index) {
+    setState(() => options.removeAt(index));
+  }
+
   @override
   void dispose() {
     menuNameController.dispose();
+    optionController.dispose();
     super.dispose();
   }
 
@@ -98,7 +133,9 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isFromDrawer ? 'Tambah Menu Rekam Medis' : 'Pilih Menu Tambahan'),
+        title: Text(
+          isFromDrawer ? 'Tambah Menu Rekam Medis' : 'Pilih Menu Tambahan',
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -113,6 +150,67 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // Form Tambahan Jika Tipe = List (pindah ke atas)
+              if (inputType == 'list') ...[
+                // Penjelasan bahwa opsi adalah field anak
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: const Text(
+                    'Tambahkan nama field anak (sub-form) untuk menu bertipe List.',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: optionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nama Field Anak',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _addOption,
+                      child: const Text('Tambah'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (options.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade400),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Field Anak (Sub-form):",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 6),
+                        for (int i = 0; i < options.length; i++)
+                          ListTile(
+                            dense: true,
+                            title: Text(options[i]),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.red),
+                              onPressed: () => _removeOption(i),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 12),
+              ],
+
+              // Dropdown Pilih Tipe Input (sekarang di bawah form opsi)
               Row(
                 children: [
                   const Text("Tipe Input: "),
@@ -125,7 +223,10 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                     ],
                     onChanged: (value) {
                       if (value != null) {
-                        setState(() => inputType = value);
+                        setState(() {
+                          inputType = value;
+                          options.clear();
+                        });
                       }
                     },
                   ),
@@ -136,6 +237,7 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                   ),
                 ],
               ),
+
               const Divider(height: 32),
             ],
 
@@ -176,7 +278,10 @@ class _TambahMenuPageState extends State<TambahMenuPage> {
                         subtitle: Text('Tipe: $tipe'),
                         trailing: isFromDrawer
                             ? IconButton(
-                                icon: const Icon(Icons.close, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () => _deleteMenu(doc.id, nama),
                               )
                             : const Icon(Icons.chevron_right),
