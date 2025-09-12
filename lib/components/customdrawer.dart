@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/pages/barcode/scan_barcode_page.dart';
+import 'package:test_front/pages/masterdata/masterdata_page.dart';
 import 'package:test_front/pages/rekammedis/menu_rm.dart';
 import 'package:test_front/pages/rekammedis/list_rm.dart';
 
@@ -48,13 +49,13 @@ class CustomDrawer extends StatelessWidget {
                   },
                 ),
                 _buildDrawerItem(
-                  icon: Icons.list,
-                  title: 'Lihat Rekam Medis',
+                  icon: Icons.data_usage,
+                  title: 'Master Data',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const LihatRekamMedisPage()),
+                      MaterialPageRoute(builder: (_) => const MasterDataPage()),
                     );
                   },
                 ),
