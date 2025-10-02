@@ -3,103 +3,72 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class MasterDataService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Method untuk mendapatkan ID berikutnya
-  Future<int> getNextId(String collection) async {
-    try {
-      // Cek counter document untuk collection ini
-      DocumentSnapshot counterDoc = await _firestore
-          .collection('counters')
-          .doc(collection)
-          .get();
-
-      if (counterDoc.exists) {
-        final data = counterDoc.data() as Map<String, dynamic>;
-        return (data['lastId'] ?? 0) + 1;
-      } else {
-        // Jika belum ada counter, mulai dari 1
-        await _firestore.collection('counters').doc(collection).set({
-          'lastId': 0,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-        return 1;
-      }
-    } catch (e) {
-      print("Error getting next ID: $e");
-      return 1;
-    }
+  // Method untuk generate document ID otomatis
+  String _generateDocId() {
+    return _firestore.collection('temp').doc().id;
   }
 
-  // Method untuk update counter ID terakhir
-  Future<void> updateLastId(String collection, int lastId) async {
-    try {
-      await _firestore.collection('counters').doc(collection).set({
-        'lastId': lastId,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print("Error updating last ID: $e");
-    }
-  }
-
-  // Method untuk batch import CSV data dengan semua kolom
+  // Method untuk batch import CSV data tanpa ID sequence
   Future<void> batchImportCSVData(
     String collection, 
     List<Map<String, dynamic>> dataList,
     List<String> headers,
   ) async {
     WriteBatch batch = _firestore.batch();
-    int nextId = await getNextId(collection);
     
     for (int i = 0; i < dataList.length; i++) {
       final data = dataList[i];
-      data['uniqueId'] = nextId + i;
       data['headers'] = headers;
       data['totalColumns'] = headers.length;
       data['createdAt'] = FieldValue.serverTimestamp();
+      data['importBatch'] = DateTime.now().millisecondsSinceEpoch;
       
-      DocumentReference docRef = _firestore.collection(collection).doc((nextId + i).toString());
+      // Generate random document ID
+      String docId = _generateDocId();
+      DocumentReference docRef = _firestore.collection(collection).doc(docId);
       batch.set(docRef, data);
     }
     
     await batch.commit();
-    await updateLastId(collection, nextId + dataList.length - 1);
   }
 
-  // Method untuk add single data dengan ID angka
-  Future<void> addDataWithId(String collection, int id, Map<String, dynamic> data) async {
-    await _firestore.collection(collection).doc(id.toString()).set(data);
+  // Method untuk add single data tanpa ID sequence
+  Future<void> addData(String collection, Map<String, dynamic> data) async {
+    data['createdAt'] = FieldValue.serverTimestamp();
+    String docId = _generateDocId();
+    await _firestore.collection(collection).doc(docId).set(data);
   }
 
-  // Method untuk get data by ID
-  Future<DocumentSnapshot?> getById(String collection, int id) async {
+  // Method untuk get data by document ID
+  Future<DocumentSnapshot?> getByDocId(String collection, String docId) async {
     try {
-      return await _firestore.collection(collection).doc(id.toString()).get();
+      return await _firestore.collection(collection).doc(docId).get();
     } catch (e) {
-      print("Error getting document by ID: $e");
+      print("Error getting document by doc ID: $e");
       return null;
     }
   }
 
-  // Method untuk update data by ID
-  Future<void> updateById(String collection, int id, Map<String, dynamic> data) async {
+  // Method untuk update data by document ID
+  Future<void> updateByDocId(String collection, String docId, Map<String, dynamic> data) async {
     try {
       data['updatedAt'] = FieldValue.serverTimestamp();
-      await _firestore.collection(collection).doc(id.toString()).update(data);
+      await _firestore.collection(collection).doc(docId).update(data);
     } catch (e) {
-      print("Error updating document by ID: $e");
+      print("Error updating document by doc ID: $e");
     }
   }
 
-  // Method untuk delete data by ID
-  Future<void> deleteById(String collection, int id) async {
+  // Method untuk delete data by document ID
+  Future<void> deleteByDocId(String collection, String docId) async {
     try {
-      await _firestore.collection(collection).doc(id.toString()).delete();
+      await _firestore.collection(collection).doc(docId).delete();
     } catch (e) {
-      print("Error deleting document by ID: $e");
+      print("Error deleting document by doc ID: $e");
     }
   }
 
-  // Method untuk clear collection dan reset counter
+  // Method untuk clear collection tanpa counter
   Future<void> clearCollection(String collection) async {
     final batch = _firestore.batch();
     final snapshots = await _firestore.collection(collection).get();
@@ -107,12 +76,6 @@ class MasterDataService {
     for (var doc in snapshots.docs) {
       batch.delete(doc.reference);
     }
-    
-    // Reset counter
-    batch.set(_firestore.collection('counters').doc(collection), {
-      'lastId': 0,
-      'resetAt': FieldValue.serverTimestamp(),
-    });
     
     await batch.commit();
   }
@@ -147,14 +110,14 @@ class MasterDataService {
     return snapshot.docs;
   }
 
-  // Method untuk get semua data dengan pagination
+  // Method untuk get semua data dengan pagination berdasarkan timestamp
   Future<List<QueryDocumentSnapshot>> getAllDataPaginated(
     String collection, 
     {int limit = 50, DocumentSnapshot? startAfter}
   ) async {
     Query query = _firestore
         .collection(collection)
-        .orderBy('uniqueId')
+        .orderBy('createdAt', descending: true)
         .limit(limit);
     
     if (startAfter != null) {
@@ -165,19 +128,11 @@ class MasterDataService {
     return snapshot.docs;
   }
 
-  // Method untuk get total count
+  // Method untuk get total count collection
   Future<int> getTotalCount(String collection) async {
     try {
-      DocumentSnapshot counterDoc = await _firestore
-          .collection('counters')
-          .doc(collection)
-          .get();
-
-      if (counterDoc.exists) {
-        final data = counterDoc.data() as Map<String, dynamic>;
-        return data['lastId'] ?? 0;
-      }
-      return 0;
+      final snapshot = await _firestore.collection(collection).count().get();
+      return snapshot.count ?? 0;
     } catch (e) {
       print("Error getting total count: $e");
       return 0;

@@ -10,7 +10,6 @@ class MasterDataPage extends StatelessWidget {
 
   Future<void> _importCSV(BuildContext context, String collection) async {
     try {
-      // Pilih file CSV
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv'],
@@ -20,18 +19,16 @@ class MasterDataPage extends StatelessWidget {
         final file = File(result.files.single.path!);
         final csvString = await file.readAsString();
 
-        // Convert CSV → List<List<dynamic>>
-        List<List<dynamic>> csvRows = const CsvToListConverter()
-            .convert(csvString);
+        List<List<dynamic>> csvRows = const CsvToListConverter().convert(
+          csvString,
+        );
 
         if (csvRows.isEmpty) {
           throw Exception("File CSV kosong");
         }
 
-        // PENTING: Skip baris pertama (header) dan kolom pertama (nomor urut)
-        // Ambil header dari baris pertama tapi skip kolom pertama (index 0)
         final rawHeaders = csvRows[0];
-        final headers = rawHeaders.length > 1 
+        final headers = rawHeaders.length > 1
             ? rawHeaders.sublist(1).map((e) => e.toString().trim()).toList()
             : [];
 
@@ -40,7 +37,6 @@ class MasterDataPage extends StatelessWidget {
         print("Total headers: ${headers.length}");
         print("Total rows (including header): ${csvRows.length}");
 
-        // Data rows dimulai dari index 1 (skip header)
         final dataRows = csvRows.sublist(1);
         print("Data rows to process: ${dataRows.length}");
 
@@ -49,20 +45,21 @@ class MasterDataPage extends StatelessWidget {
         }
 
         if (headers.isEmpty) {
-          throw Exception("Tidak ada kolom data untuk diimpor (hanya nomor urut)");
+          throw Exception(
+            "Tidak ada kolom data untuk diimpor (hanya nomor urut)",
+          );
         }
 
         final service = MasterDataService();
         List<Map<String, dynamic>> dataList = [];
         int errorCount = 0;
 
-        // Proses setiap baris data (bukan header)
         for (int i = 0; i < dataRows.length; i++) {
           try {
             final rawRow = dataRows[i];
-            // Skip kolom pertama (nomor urut) dari setiap row
+
             final row = rawRow.length > 1 ? rawRow.sublist(1) : [];
-            
+
             print("Processing row ${i + 1}:");
             print("  Raw row: $rawRow");
             print("  Data row (skip first): $row");
@@ -72,40 +69,42 @@ class MasterDataPage extends StatelessWidget {
               continue;
             }
 
-            // Buat map data dengan semua kolom yang tersedia (tanpa kolom nomor urut)
             Map<String, dynamic> dataMap = {};
-            
-            // Isi data sesuai dengan jumlah kolom yang ada (skip kolom pertama)
+
             for (int j = 0; j < headers.length; j++) {
-              String headerKey = 'column_${j + 1}'; // column_1, column_2, dst
+              String headerKey = 'column_${j + 1}';
               String headerName = headers[j];
               String cellValue = j < row.length ? row[j].toString().trim() : '';
-              
+
               dataMap[headerKey] = cellValue;
-              dataMap['${headerKey}_name'] = headerName; // Simpan nama header juga
+              dataMap['${headerKey}_name'] = headerName;
             }
 
-            // Skip baris jika semua kolom data kosong
-            bool hasData = dataMap.values.any((value) => 
-                value is String && value.isNotEmpty && !value.contains('_name'));
-            
+            bool hasData = dataMap.values.any(
+              (value) =>
+                  value is String &&
+                  value.isNotEmpty &&
+                  !value.contains('_name'),
+            );
+
             if (!hasData) {
               print("Skipping empty data row ${i + 1}");
               continue;
             }
 
-            // Tambah metadata
-            dataMap['csvRowNumber'] = i + 1; // Nomor baris di CSV (tanpa header)
-            dataMap['originalRowNumber'] = i + 2; // Nomor baris asli di file (termasuk header)
-            dataMap['totalColumnsInRow'] = row.length; // Jumlah kolom data (tanpa nomor urut)
-            dataMap['totalDataColumns'] = headers.length; // Total kolom header
-            
-            // Untuk backward compatibility dengan kode lama
-            if (dataMap['column_1'] != null && dataMap['column_1'].toString().isNotEmpty) {
+            dataMap['csvRowNumber'] = i + 1;
+            dataMap['originalRowNumber'] = i + 2;
+            dataMap['totalColumnsInRow'] = row.length;
+            dataMap['totalDataColumns'] = headers.length;
+            dataMap['importedAt'] = DateTime.now().millisecondsSinceEpoch;
+
+            if (dataMap['column_1'] != null &&
+                dataMap['column_1'].toString().isNotEmpty) {
               dataMap['code'] = dataMap['column_1'];
               dataMap['csvId'] = dataMap['column_1'];
             }
-            if (dataMap['column_2'] != null && dataMap['column_2'].toString().isNotEmpty) {
+            if (dataMap['column_2'] != null &&
+                dataMap['column_2'].toString().isNotEmpty) {
               dataMap['description'] = dataMap['column_2'];
             }
 
@@ -120,8 +119,11 @@ class MasterDataPage extends StatelessWidget {
           throw Exception("Tidak ada data valid untuk diimpor");
         }
 
-        // Batch import ke Firestore
-        await service.batchImportCSVData(collection, dataList, headers.cast<String>());
+        await service.batchImportCSVData(
+          collection,
+          dataList,
+          headers.cast<String>(),
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -267,7 +269,9 @@ class MasterDataPage extends StatelessWidget {
                 await service.clearCollection(collection);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("✅ Semua data ${collection.toUpperCase()} telah dihapus"),
+                    content: Text(
+                      "✅ Semua data ${collection.toUpperCase()} telah dihapus",
+                    ),
                     backgroundColor: Colors.orange,
                   ),
                 );
@@ -280,7 +284,10 @@ class MasterDataPage extends StatelessWidget {
                 );
               }
             },
-            child: const Text("Hapus Semua", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "Hapus Semua",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -304,19 +311,29 @@ class MasterDataPage extends StatelessWidget {
               const SizedBox(height: 12),
               const Text(
                 "✅ Yang BENAR:",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
               ),
               const Text("• Baris pertama adalah HEADER (akan di-skip)"),
               const Text("• Kolom pertama adalah NOMOR URUT (akan di-skip)"),
-              const Text("• Sistem hanya membaca DATA MURNI (tanpa nomor & header)"),
+              const Text(
+                "• Sistem hanya membaca DATA MURNI (tanpa nomor & header)",
+              ),
               const Text("• Kolom kosong akan disimpan sebagai string kosong"),
               const SizedBox(height: 12),
               const Text(
                 "❌ Yang akan DIABAIKAN:",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
               ),
               const Text("• Baris pertama (header) - tidak masuk ke database"),
-              const Text("• Kolom pertama (nomor urut) - tidak masuk ke database"),
+              const Text(
+                "• Kolom pertama (nomor urut) - tidak masuk ke database",
+              ),
               const Text("• Baris yang semua kolomnya kosong"),
               const SizedBox(height: 16),
               const Text(
@@ -326,17 +343,14 @@ class MasterDataPage extends StatelessWidget {
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(8),
-                
+
                 child: const Text(
                   "No,Kode,Nama Penyakit,Kategori,Status,Keterangan\n"
                   "1,A01.0,Demam Tifoid,Infeksi,Aktif,Umum\n"
                   "2,A01.1,Paratifoid A,Infeksi,Review,Jarang\n"
                   "3,B02.0,Herpes Zoster,Virus,Aktif,Kritis\n"
                   "4,C78.1,Metastase Paru,Tumor,Aktif,Serius",
-                  style: TextStyle(
-                    fontFamily: 'Courier',
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontFamily: 'Courier', fontSize: 12),
                 ),
               ),
               const SizedBox(height: 12),
@@ -344,11 +358,17 @@ class MasterDataPage extends StatelessWidget {
                 "🔍 Hasil setelah import:",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              const Text("• Header yang tersimpan: Kode, Nama Penyakit, Kategori, Status, Keterangan"),
-              const Text("• Data: 4 baris akan tersimpan (nomor urut diabaikan)"),
+              const Text(
+                "• Header yang tersimpan: Kode, Nama Penyakit, Kategori, Status, Keterangan",
+              ),
+              const Text(
+                "• Data: 4 baris akan tersimpan (nomor urut diabaikan)",
+              ),
               const Text("• Kolom 'No' tidak akan tersimpan"),
               const Text("• Header row tidak akan tersimpan sebagai data"),
-              const Text("• Struktur: column_1=Kode, column_2=Nama Penyakit, dst"),
+              const Text(
+                "• Struktur: column_1=Kode, column_2=Nama Penyakit, dst",
+              ),
             ],
           ),
         ),
@@ -372,13 +392,13 @@ class ICDList extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection(collection)
-          .orderBy("uniqueId")
+          .orderBy("createdAt", descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Column(
@@ -403,8 +423,8 @@ class ICDList extends StatelessWidget {
           itemCount: docs.length,
           itemBuilder: (context, index) {
             final data = docs[index].data() as Map<String, dynamic>;
+            final docId = docs[index].id;
             final headers = data['headers'] as List<dynamic>? ?? [];
-            final uniqueId = data['uniqueId'] ?? 0;
 
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -412,7 +432,7 @@ class ICDList extends StatelessWidget {
                 leading: CircleAvatar(
                   backgroundColor: Theme.of(context).primaryColor,
                   child: Text(
-                    uniqueId.toString(),
+                    "${index + 1}",
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -427,11 +447,14 @@ class ICDList extends StatelessWidget {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("ID: $uniqueId | Kode: ${data['column_1'] ?? data['code'] ?? 'N/A'}"),
+                    Text("Kode: ${data['column_1'] ?? data['code'] ?? 'N/A'}"),
                     if (headers.isNotEmpty)
                       Text(
                         "Data Kolom: ${headers.length} | Baris CSV: ${data['csvRowNumber'] ?? 'N/A'}",
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                   ],
                 ),
@@ -441,30 +464,41 @@ class ICDList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Info Card
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.blue.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                            border: Border.all(
+                              color: Colors.blue.withOpacity(0.3),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                              const Icon(
+                                Icons.info_outline,
+                                color: Colors.blue,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Unique ID: $uniqueId",
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      "Document ID: ${docId.substring(0, 8)}...",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     if (data['csvRowNumber'] != null)
-                                      Text("Baris Data: ${data['csvRowNumber']} (skip header)"),
+                                      Text(
+                                        "Baris Data: ${data['csvRowNumber']} (skip header)",
+                                      ),
                                     if (data['totalDataColumns'] != null)
-                                      Text("Kolom Data: ${data['totalDataColumns']} (skip nomor urut)"),
+                                      Text(
+                                        "Kolom Data: ${data['totalDataColumns']} (skip nomor urut)",
+                                      ),
                                   ],
                                 ),
                               ),
@@ -472,15 +506,12 @@ class ICDList extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
-                        // Dynamic columns
+
                         ...List.generate(headers.length, (i) {
                           final columnKey = 'column_${i + 1}';
                           final columnValue = data[columnKey]?.toString() ?? '';
                           final headerName = headers[i].toString();
-                          
-                          if (columnValue.isEmpty) return const SizedBox.shrink();
-                          
+
                           return _buildDataRow(
                             "Kolom ${i + 1}",
                             columnValue,
@@ -488,6 +519,25 @@ class ICDList extends StatelessWidget {
                             _getColorForIndex(i),
                           );
                         }),
+
+                        const SizedBox(height: 12),
+                        Center(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showDeleteConfirmation(
+                              context,
+                              collection,
+                              docId,
+                              data,
+                            ),
+                            icon: const Icon(Icons.delete, size: 16),
+                            label: const Text("Hapus Data"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(120, 36),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -516,8 +566,75 @@ class ICDList extends StatelessWidget {
     return colors[index % colors.length];
   }
 
-  Widget _buildDataRow(String label, String value, String headerName, Color color) {
-    if (value.isEmpty) return const SizedBox.shrink();
+  void _showDeleteConfirmation(
+    BuildContext context,
+    String collection,
+    String docId,
+    Map<String, dynamic> data,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Data"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Apakah Anda yakin ingin menghapus data ini?"),
+            const SizedBox(height: 8),
+            Text("Kode: ${data['column_1'] ?? 'N/A'}"),
+            Text("Deskripsi: ${data['column_2'] ?? 'N/A'}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                final service = MasterDataService();
+                await service.deleteByDocId(collection, docId);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("✅ Data berhasil dihapus"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("❌ Error: $e"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text("Hapus", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataRow(
+    String label,
+    String value,
+    String headerName,
+    Color color,
+  ) {
+    final displayValue = value.isEmpty ? "(kosong)" : value;
+    final textStyle = value.isEmpty
+        ? const TextStyle(
+            fontWeight: FontWeight.w300,
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey,
+          )
+        : const TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -534,13 +651,10 @@ class ICDList extends StatelessWidget {
             Container(
               width: 24,
               height: 24,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               child: Center(
                 child: Text(
-                  label.split(' ')[1], // Ambil angka dari "Kolom X"
+                  label.split(' ')[1],
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 11,
@@ -563,13 +677,7 @@ class ICDList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                    ),
-                  ),
+                  Text(displayValue, style: textStyle),
                 ],
               ),
             ),
