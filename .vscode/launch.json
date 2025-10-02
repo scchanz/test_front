@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "test_front",
+            "name": "klinik app",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "test_front (profile mode)",
+            "name": "klinik app (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "test_front (release mode)",
+            "name": "klinik app (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
