@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/tools/barcode/scan_barcode_page.dart';
 import 'package:test_front/pages/masterdata/masterdata_page.dart';
 import 'package:test_front/pages/rekammedis/menu_rm.dart';
-import 'package:test_front/pages/rekammedis/list_rm.dart';
 
 class CustomDrawer extends StatelessWidget {
   final User user;
@@ -55,7 +54,7 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const MasterDataPage()),
+                      MaterialPageRoute(builder: (_) =>  MasterDataPage()),
                     );
                   },
                 ),
