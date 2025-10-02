@@ -30,11 +30,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   late Animation<double> _cardScaleAnimation;
 
   // Hospital green color palette
-  static const Color primaryGreen = Color(0xFF4CAF50);      // Main green
-  static const Color lightGreen = Color(0xFF81C784);        // Light green
-  static const Color paleGreen = Color(0xFFE8F5E8);         // Very light green
-  static const Color mintGreen = Color(0xFFA5D6A7);         // Mint green
-  static const Color backgroundGreen = Color(0xFFF1F8E9);   // Background green
+  static const Color primaryGreen = Color(0xFF4CAF50);
+  static const Color lightGreen = Color(0xFF81C784);
+  static const Color paleGreen = Color(0xFFE8F5E8);
+  static const Color mintGreen = Color(0xFFA5D6A7);
+  static const Color backgroundGreen = Color(0xFFF1F8E9);
 
   @override
   void initState() {
@@ -63,7 +63,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         );
 
-    // Header animations
     _headerScaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _headerAnimationController,
@@ -84,7 +83,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         );
 
-    // Card animations
     _cardSlideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _cardAnimationController,
@@ -220,7 +218,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildWelcomeHeader() {
+  Widget _buildWelcomeHeader(bool isSmallScreen, bool isMediumScreen) {
     return AnimatedBuilder(
       animation: _headerAnimationController,
       builder: (context, child) {
@@ -229,15 +227,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Decorative elements with hospital green design
               FadeTransition(
                 opacity: _titleFadeAnimation,
                 child: Row(
                   children: [
-                    // Simple gradient bar in hospital green
                     Container(
-                      width: 6,
-                      height: 50,
+                      width: isSmallScreen ? 4 : 6,
+                      height: isSmallScreen ? 40 : 50,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(3),
@@ -250,21 +246,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: isSmallScreen ? 12 : 16),
                     Expanded(
                       child: SlideTransition(
                         position: _titleSlideAnimation,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Enhanced main greeting
                             RichText(
                               text: TextSpan(
                                 children: [
                                   TextSpan(
                                     text: 'Selamat Datang',
                                     style: TextStyle(
-                                      fontSize: 36,
+                                      fontSize: isSmallScreen ? 28 : (isMediumScreen ? 32 : 36),
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                       letterSpacing: -1.5,
@@ -274,20 +269,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   TextSpan(
                                     text: ' ✨',
                                     style: TextStyle(
-                                      fontSize: 32,
+                                      fontSize: isSmallScreen ? 24 : (isMediumScreen ? 28 : 32),
                                       color: Colors.white,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(height: 8),
-                            
-                            // Enhanced subtitle
+                            SizedBox(height: isSmallScreen ? 6 : 8),
                             Text(
                               'Kami rindu dengan kehadiran Anda\nMari mulai perjalanan luar biasa ini!',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: isSmallScreen ? 14 : 16,
                                 color: Colors.white.withOpacity(0.9),
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: 0.3,
@@ -301,15 +294,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              
-              SizedBox(height: 20),
-              
-              // Enhanced decorative elements
+              SizedBox(height: isSmallScreen ? 16 : 20),
               FadeTransition(
                 opacity: _titleFadeAnimation,
                 child: Row(
                   children: [
-                    SizedBox(width: 22),
+                    SizedBox(width: isSmallScreen ? 16 : 22),
                     ...List.generate(5, (index) {
                       return Container(
                         margin: EdgeInsets.only(right: index == 2 ? 12 : 6),
@@ -345,12 +335,33 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 360;
+    final isMediumScreen = size.width >= 360 && size.width < 600;
+    final isTablet = size.width >= 600 && size.width < 1024;
+    final isDesktop = size.width >= 1024;
+
+    // Responsive padding
+    double horizontalPadding = 24.0;
+    if (isSmallScreen) {
+      horizontalPadding = 16.0;
+    } else if (isTablet) {
+      horizontalPadding = 48.0;
+    } else if (isDesktop) {
+      horizontalPadding = 0; // Will use centered container instead
+    }
+
+    // Responsive card padding
+    double cardPadding = isSmallScreen ? 24 : (isMediumScreen ? 28 : 32);
+
+    // Responsive font sizes
+    double inputFontSize = isSmallScreen ? 14 : 16;
+    double buttonFontSize = isSmallScreen ? 16 : 18;
+    double labelFontSize = isSmallScreen ? 14 : 15;
 
     return Scaffold(
       body: Container(
         height: size.height,
         decoration: BoxDecoration(
-          // Simplified hospital green gradient
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -362,187 +373,189 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: size.height * 0.06),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Container(
+                width: isDesktop ? 500 : (isTablet ? size.width * 0.7 : size.width),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: isSmallScreen ? 24 : (isTablet ? 40 : size.height * 0.06)),
 
-                      // Enhanced Welcome Header
-                      _buildWelcomeHeader(),
+                        _buildWelcomeHeader(isSmallScreen, isMediumScreen),
 
-                      SizedBox(height: size.height * 0.05),
+                        SizedBox(height: isSmallScreen ? 24 : (isTablet ? 32 : size.height * 0.05)),
 
-                      // Enhanced Card with hospital green accents
-                      AnimatedBuilder(
-                        animation: _cardAnimationController,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(0, _cardSlideAnimation.value),
-                            child: ScaleTransition(
-                              scale: _cardScaleAnimation,
-                              child: Container(
-                                padding: EdgeInsets.all(32),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(28),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 40,
-                                      offset: Offset(0, 20),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.04),
-                                      blurRadius: 20,
-                                      offset: Offset(0, 10),
-                                    ),
-                                    BoxShadow(
-                                      color: primaryGreen.withOpacity(0.1),
-                                      blurRadius: 60,
-                                      offset: Offset(0, 30),
-                                    ),
-                                  ],
-                                ),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(18),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.08),
-                                              blurRadius: 15,
-                                              offset: Offset(0, 6),
-                                            ),
-                                          ],
-                                        ),
-                                        child: TextFormField(
-                                          controller: _emailController,
-                                          validator: _validateEmail,
-                                          keyboardType: TextInputType.emailAddress,
-                                          style: TextStyle(fontSize: 16),
-                                          decoration: InputDecoration(
-                                            labelText: 'Email',
-                                            labelStyle: TextStyle(color: Colors.grey[600]),
-                                            prefixIcon: Container(
-                                              margin: EdgeInsets.all(14),
-                                              decoration: BoxDecoration(
-                                                color: paleGreen,
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                Icons.email_outlined,
-                                                color: primaryGreen,
-                                                size: 22,
-                                              ),
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                              borderSide: BorderSide(
-                                                color: primaryGreen,
-                                                width: 2.5,
-                                              ),
-                                            ),
-                                            filled: true,
-                                            fillColor: Colors.grey[50],
-                                            contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 24,
-                                              vertical: 20,
-                                            ),
-                                          ),
-                                        ),
+                        AnimatedBuilder(
+                          animation: _cardAnimationController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _cardSlideAnimation.value),
+                              child: ScaleTransition(
+                                scale: _cardScaleAnimation,
+                                child: Container(
+                                  padding: EdgeInsets.all(cardPadding),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(isSmallScreen ? 20 : 28),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 40,
+                                        offset: Offset(0, 20),
                                       ),
-
-                                      SizedBox(height: 24),
-
-                                      // Password Field with hospital green styling
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(18),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.08),
-                                              blurRadius: 15,
-                                              offset: Offset(0, 6),
-                                            ),
-                                          ],
-                                        ),
-                                        child: TextFormField(
-                                          controller: _passwordController,
-                                          validator: _validatePassword,
-                                          obscureText: _obscurePassword,
-                                          style: TextStyle(fontSize: 16),
-                                          decoration: InputDecoration(
-                                            labelText: 'Password',
-                                            labelStyle: TextStyle(color: Colors.grey[600]),
-                                            prefixIcon: Container(
-                                              margin: EdgeInsets.all(14),
-                                              decoration: BoxDecoration(
-                                                color: paleGreen,
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                Icons.lock_outlined,
-                                                color: primaryGreen,
-                                                size: 22,
-                                              ),
-                                            ),
-                                            suffixIcon: IconButton(
-                                              icon: Icon(
-                                                _obscurePassword
-                                                    ? Icons.visibility_outlined
-                                                    : Icons.visibility_off_outlined,
-                                                color: Colors.grey[600],
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  _obscurePassword = !_obscurePassword;
-                                                });
-                                              },
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                              borderSide: BorderSide(
-                                                color: primaryGreen,
-                                                width: 2.5,
-                                              ),
-                                            ),
-                                            filled: true,
-                                            fillColor: Colors.grey[50],
-                                            contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 24,
-                                              vertical: 20,
-                                            ),
-                                          ),
-                                        ),
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 20,
+                                        offset: Offset(0, 10),
                                       ),
-
-                                      SizedBox(height: 16),
-
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Container(
+                                      BoxShadow(
+                                        color: primaryGreen.withOpacity(0.1),
+                                        blurRadius: 60,
+                                        offset: Offset(0, 30),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Form(
+                                    key: _formKey,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(18),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.08),
+                                                blurRadius: 15,
+                                                offset: Offset(0, 6),
+                                              ),
+                                            ],
                                           ),
+                                          child: TextFormField(
+                                            controller: _emailController,
+                                            validator: _validateEmail,
+                                            keyboardType: TextInputType.emailAddress,
+                                            style: TextStyle(fontSize: inputFontSize),
+                                            decoration: InputDecoration(
+                                              labelText: 'Email',
+                                              labelStyle: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: labelFontSize,
+                                              ),
+                                              prefixIcon: Container(
+                                                margin: EdgeInsets.all(14),
+                                                decoration: BoxDecoration(
+                                                  color: paleGreen,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Icon(
+                                                  Icons.email_outlined,
+                                                  color: primaryGreen,
+                                                  size: isSmallScreen ? 20 : 22,
+                                                ),
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                                borderSide: BorderSide(
+                                                  color: primaryGreen,
+                                                  width: 2.5,
+                                                ),
+                                              ),
+                                              filled: true,
+                                              fillColor: Colors.grey[50],
+                                              contentPadding: EdgeInsets.symmetric(
+                                                horizontal: isSmallScreen ? 16 : 24,
+                                                vertical: isSmallScreen ? 16 : 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        SizedBox(height: isSmallScreen ? 20 : 24),
+
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(18),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.08),
+                                                blurRadius: 15,
+                                                offset: Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: TextFormField(
+                                            controller: _passwordController,
+                                            validator: _validatePassword,
+                                            obscureText: _obscurePassword,
+                                            style: TextStyle(fontSize: inputFontSize),
+                                            decoration: InputDecoration(
+                                              labelText: 'Password',
+                                              labelStyle: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: labelFontSize,
+                                              ),
+                                              prefixIcon: Container(
+                                                margin: EdgeInsets.all(14),
+                                                decoration: BoxDecoration(
+                                                  color: paleGreen,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Icon(
+                                                  Icons.lock_outlined,
+                                                  color: primaryGreen,
+                                                  size: isSmallScreen ? 20 : 22,
+                                                ),
+                                              ),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(
+                                                  _obscurePassword
+                                                      ? Icons.visibility_outlined
+                                                      : Icons.visibility_off_outlined,
+                                                  color: Colors.grey[600],
+                                                  size: isSmallScreen ? 20 : 24,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _obscurePassword = !_obscurePassword;
+                                                  });
+                                                },
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                                borderSide: BorderSide(
+                                                  color: primaryGreen,
+                                                  width: 2.5,
+                                                ),
+                                              ),
+                                              filled: true,
+                                              fillColor: Colors.grey[50],
+                                              contentPadding: EdgeInsets.symmetric(
+                                                horizontal: isSmallScreen ? 16 : 24,
+                                                vertical: isSmallScreen ? 16 : 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        SizedBox(height: isSmallScreen ? 12 : 16),
+
+                                        Align(
+                                          alignment: Alignment.centerRight,
                                           child: TextButton(
                                             onPressed: () {},
                                             style: TextButton.styleFrom(
@@ -556,264 +569,263 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                               style: TextStyle(
                                                 color: primaryGreen,
                                                 fontWeight: FontWeight.w600,
-                                                fontSize: 15,
+                                                fontSize: labelFontSize,
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
 
-                                      SizedBox(height: 20),
+                                        SizedBox(height: isSmallScreen ? 16 : 20),
 
-                                      if (_errorMessage != null) ...[
-                                        Container(
-                                          padding: EdgeInsets.all(18),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.shade50,
-                                            borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(
-                                              color: Colors.red.shade200,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.error_outline,
-                                                color: Colors.red.shade600,
-                                                size: 22,
+                                        if (_errorMessage != null) ...[
+                                          Container(
+                                            padding: EdgeInsets.all(isSmallScreen ? 14 : 18),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade50,
+                                              borderRadius: BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: Colors.red.shade200,
                                               ),
-                                              SizedBox(width: 14),
-                                              Expanded(
-                                                child: Text(
-                                                  _errorMessage!,
-                                                  style: TextStyle(
-                                                    color: Colors.red.shade700,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w500,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.error_outline,
+                                                  color: Colors.red.shade600,
+                                                  size: isSmallScreen ? 20 : 22,
+                                                ),
+                                                SizedBox(width: 14),
+                                                Expanded(
+                                                  child: Text(
+                                                    _errorMessage!,
+                                                    style: TextStyle(
+                                                      color: Colors.red.shade700,
+                                                      fontSize: isSmallScreen ? 13 : 14,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: isSmallScreen ? 20 : 24),
+                                        ],
+
+                                        Container(
+                                          width: double.infinity,
+                                          height: isSmallScreen ? 52 : 60,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(18),
+                                            color: const Color(0xFF4CAF50),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: primaryGreen.withOpacity(0.3),
+                                                blurRadius: 20,
+                                                offset: Offset(0, 10),
                                               ),
                                             ],
                                           ),
+                                          child: ElevatedButton(
+                                            onPressed: _isLoading
+                                                ? null
+                                                : _loginWithEmailPassword,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: primaryGreen,
+                                              foregroundColor: Colors.white,
+                                              shadowColor: Colors.transparent,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                              ),
+                                            ),
+                                            child: _isLoading
+                                                ? SizedBox(
+                                                    height: isSmallScreen ? 24 : 26,
+                                                    width: isSmallScreen ? 24 : 26,
+                                                    child: CircularProgressIndicator(
+                                                      color: Colors.white,
+                                                      strokeWidth: 2.8,
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    'Masuk Sekarang',
+                                                    style: TextStyle(
+                                                      fontSize: buttonFontSize,
+                                                      fontWeight: FontWeight.w700,
+                                                      letterSpacing: 0.8,
+                                                    ),
+                                                  ),
+                                          ),
                                         ),
-                                        SizedBox(height: 24),
-                                      ],
 
-                                      // Login Button with hospital green color
-                                      Container(
-                                        width: double.infinity,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(18),
-                                          color: primaryGreen,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: primaryGreen.withOpacity(0.3),
-                                              blurRadius: 20,
-                                              offset: Offset(0, 10),
+                                        SizedBox(height: isSmallScreen ? 24 : 32),
+
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Divider(
+                                                color: Colors.grey.shade300,
+                                                thickness: 1.2,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: isSmallScreen ? 12 : 20,
+                                              ),
+                                              child: Text(
+                                                'atau masuk dengan',
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: isSmallScreen ? 13 : 15,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Divider(
+                                                color: Colors.grey.shade300,
+                                                thickness: 1.2,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                        child: ElevatedButton(
-                                          onPressed: _isLoading
-                                              ? null
-                                              : _loginWithEmailPassword,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: primaryGreen,
-                                            foregroundColor: Colors.white,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? SizedBox(
-                                                  height: 26,
-                                                  width: 26,
-                                                  child: CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                    strokeWidth: 2.8,
-                                                  ),
-                                                )
-                                              : Text(
-                                                  'Masuk Sekarang',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w700,
-                                                    letterSpacing: 0.8,
-                                                  ),
-                                                ),
-                                        ),
-                                      ),
 
-                                      SizedBox(height: 32),
+                                        SizedBox(height: isSmallScreen ? 20 : 28),
 
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Divider(
+                                        Container(
+                                          width: double.infinity,
+                                          height: isSmallScreen ? 52 : 60,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(18),
+                                            border: Border.all(
                                               color: Colors.grey.shade300,
-                                              thickness: 1.2,
+                                              width: 1.8,
                                             ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey.withOpacity(0.12),
+                                                blurRadius: 15,
+                                                offset: Offset(0, 6),
+                                              ),
+                                            ],
                                           ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 20,
+                                          child: OutlinedButton.icon(
+                                            onPressed: _isLoading
+                                                ? null
+                                                : _loginWithGoogle,
+                                            style: OutlinedButton.styleFrom(
+                                              backgroundColor: Colors.white,
+                                              foregroundColor: Colors.grey.shade700,
+                                              side: BorderSide.none,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(18),
+                                              ),
                                             ),
-                                            child: Text(
-                                              'atau masuk dengan',
+                                            icon: Container(
+                                              width: isSmallScreen ? 22 : 26,
+                                              height: isSmallScreen ? 22 : 26,
+                                              child: Image.network(
+                                                'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
+                                                errorBuilder:
+                                                    (context, error, stackTrace) => Icon(
+                                                      Icons.account_circle,
+                                                      color: Colors.red,
+                                                      size: isSmallScreen ? 22 : 26,
+                                                    ),
+                                              ),
+                                            ),
+                                            label: Text(
+                                              'Masuk dengan Google',
                                               style: TextStyle(
-                                                color: Colors.grey.shade600,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w500,
+                                                fontSize: isSmallScreen ? 15 : 17,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ),
-                                          Expanded(
-                                            child: Divider(
-                                              color: Colors.grey.shade300,
-                                              thickness: 1.2,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      SizedBox(height: 28),
-
-                                      // Google Sign In Button
-                                      Container(
-                                        width: double.infinity,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(18),
-                                          border: Border.all(
-                                            color: Colors.grey.shade300,
-                                            width: 1.8,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.12),
-                                              blurRadius: 15,
-                                              offset: Offset(0, 6),
-                                            ),
-                                          ],
                                         ),
-                                        child: OutlinedButton.icon(
-                                          onPressed: _isLoading
-                                              ? null
-                                              : _loginWithGoogle,
-                                          style: OutlinedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Colors.grey.shade700,
-                                            side: BorderSide.none,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(18),
-                                            ),
-                                          ),
-                                          icon: Container(
-                                            width: 26,
-                                            height: 26,
-                                            child: Image.network(
-                                              'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
-                                              errorBuilder:
-                                                  (context, error, stackTrace) => Icon(
-                                                    Icons.account_circle,
-                                                    color: Colors.red,
-                                                    size: 26,
-                                                  ),
-                                            ),
-                                          ),
-                                          label: Text(
-                                            'Masuk dengan Google',
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        SizedBox(height: isSmallScreen ? 24 : (isTablet ? 32 : 36)),
+
+                        Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 16 : 24,
+                              vertical: isSmallScreen ? 12 : 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.25),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 4,
+                              children: [
+                                Text(
+                                  'Belum punya akun? ',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.95),
+                                    fontSize: isSmallScreen ? 14 : 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => RegisterPage(),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Daftar Sekarang',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: isSmallScreen ? 14 : 16,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-
-                      SizedBox(height: 36),
-
-                      // Registration prompt with hospital green theme
-                      Center(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.25),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 20,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Belum punya akun? ',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.95),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => RegisterPage(),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Daftar Sekarang',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ),
-                      ),
 
-                      SizedBox(height: 40),
-                    ],
+                        SizedBox(height: isSmallScreen ? 24 : 40),
+                      ],
+                    ),
                   ),
                 ),
               ),
