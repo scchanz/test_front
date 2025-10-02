@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:test_front/pages/home/home_page.dart';
-import 'package:test_front/pages/login/login_page.dart';
+import 'package:test_front/splash/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
           if (user != null) {
             return HomePage(user: user);
           }
-          return LoginPage();
+          return SplashScreen();
         },
       ),
     );
